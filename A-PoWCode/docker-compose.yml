@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: .
+      args:
+        APP_DIR: server
+    container_name: server
+    command: go run main.go
+    networks:
+      pow_net:
+        ipv4_address: 172.28.0.100
+    ports: ["5000:5000"]
+    environment:
+      NODE_ROLE: server
+      NETWORK_SEGMENT: 172.28.0.0/24
+
+  worknode-base: &worknode-base
+    build:
+      context: .
+      args:
+        APP_DIR: worknode
+    networks:
+      pow_net:
+        ipv4_address: 172.28.0.1${NODE_ID}
+    environment:
+      NODE_ROLE: worker
+      SERVER_IP: 172.28.0.100
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+
+  worknode1:
+    <<: *worknode-base
+    container_name: worknode1
+    environment:
+      NODE_ID: "01"
+    cpu_quota: 25000
+
+  worknode2:
+    <<: *worknode-base
+    container_name: worknode2
+    environment:
+      NODE_ID: "02"
+    cpu_quota: 50000
+  worknode3:
+    <<: *worknode-base
+    container_name: worknode3
+    environment:
+      NODE_ID: "03"
+    cpu_quota: 50000
+  worknode4:
+    <<: *worknode-base
+    container_name: worknode4
+    environment:
+      NODE_ID: "04"
+    cpu_quota: 50000
+  worknode5:
+    <<: *worknode-base
+    container_name: worknode5
+    environment:
+      NODE_ID: "05"
+    cpu_quota: 50000
+  worknode6:
+    <<: *worknode-base
+    container_name: worknode6
+    environment:
+      NODE_ID: "06"
+    cpu_quota: 50000
+
+networks:
+  pow_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
+          gateway: 172.28.0.1
