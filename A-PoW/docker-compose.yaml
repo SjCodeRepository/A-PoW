@@ -1,0 +1,63 @@
+# Server node and Worker node startup template. Adjust the number of nodes as required
+x-node-env: &node-env
+  NODE_ID : "00"
+  NODE1_IP: 172.28.0.101:5000
+  NODE1_ID: "01"
+
+services:
+  server:
+    build:
+      context: .
+      args:
+        APP_DIR: server
+    container_name: server
+    command: sh -c "cd /app/runservicenode && go run main.go"
+    networks:
+      pow_net:
+        ipv4_address: 172.28.0.100
+    ports: ["5000:5000"]  
+    environment:
+      <<: *node-env
+      NODE_ROLE: server
+      SERVER_IP: 172.28.0.100:5000
+      LISTEN_ADDRESS: "172.28.0.100:5000"  
+
+  worknode-base: &worknode-base
+    build:
+      context: .
+      args:
+        APP_DIR: worknode
+    command: sh -c "cd /app/runworknode && go run main.go"
+    networks:
+      pow_net:
+        ipv4_address: 172.28.0.2  
+    environment: &worknode-env
+      <<: *node-env
+      NODE_ROLE: worker
+      SERVER_IP: 172.28.0.100:5000
+      NODE_ID: "00"  
+  worknode1:
+    <<: *worknode-base
+    container_name: worknode1
+    environment:
+      <<: *worknode-env 
+      CURRENT_NODE_IP: 172.28.0.101:5000
+      CURRENT_NODE_ID: "01" 
+    networks:
+      pow_net:
+        ipv4_address: 172.28.0.101
+    deploy:  
+      resources:
+        limits:
+          cpus: "2.00"  
+          memory: 4G     
+        reservations:
+          memory: 500M
+
+networks:
+  pow_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
+          gateway: 172.28.0.254
