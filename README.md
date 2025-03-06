@@ -22,3 +22,5 @@ The test network is built on BlockEmulator, a framework originally developed by 
 The NodesTimes[][] 2D array records the average mining time for each node in the group at various difficulty levels. Each row stores data for a node group, organized in increasing order of difficulty.
 
 The docker-compose.yaml file defines the startup template for both the Server and Worker nodes. Adjust the number of nodes as required, and ensure that the TotalNodeNum field in the config file is updated to match the new number of nodes.
+
+After the preset total number of experimental rounds (`EndCodeNum` in config.go) is achieved, the Server node will print out the experimental results including the total number of times each node becomes leader, the total number of iterations of each node, and the reference trust value.
